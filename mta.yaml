@@ -1,0 +1,53 @@
+_schema-version: '3.1'
+ID: on_prem_consume
+version: 1.0.0
+description: "A simple CAP project."
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npx -p @sap/cds-dk cds build --production
+modules:
+  - name: on_prem_consume-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: on_prem_consume-auth
+      - name: on_prem_consume-dest
+      - name: on_prem_consume-connectivity
+
+resources:
+  - name: on_prem_consume-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+  - name: on_prem_consume-dest
+    type: org.cloudfoundry.managed-service
+    parameters:
+      config:
+        HTML5Runtime_enabled: false
+        init_data:
+          instance:
+            destinations:
+            existing_destinations_policy: update
+        version: 1.0.0
+      service: destination
+      service-name: on_prem_consume-dest
+      service-plan: lite
+  - name: on_prem_consume-connectivity
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: connectivity
+      service-plan: lite

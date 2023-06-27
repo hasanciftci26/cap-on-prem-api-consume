@@ -1,0 +1,8 @@
+{
+  "xsappname": "on_prem_consume",
+  "tenant-mode": "dedicated",
+  "scopes": [],
+  "attributes": [],
+  "role-templates": [],
+  "authorities-inheritance": false
+}
